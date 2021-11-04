@@ -14,21 +14,21 @@ class AsyncAwaitTests: XCTestCase {
     func testAsyncAwaitChainWorks() {
         let exp = expectation(description: "")
         async {
-            let userId = try await(fetchUserId())
+            let userId = try awaitPromise(fetchUserId())
             XCTAssertEqual(userId, 1234)
-            let userName = try await(fetchUserNameFromId(userId))
+            let userName = try awaitPromise(fetchUserNameFromId(userId))
             XCTAssertEqual(userName, "John Smith")
-            let isFollowed = try await(fetchUserFollowStatusFromName(userName))
+            let isFollowed = try awaitPromise(fetchUserFollowStatusFromName(userName))
             XCTAssertFalse(isFollowed)
             exp.fulfill()
         }
         waitForExpectations(timeout: 0.5, handler: nil)
     }
     
-    func testFailingAsyncAwait() {
+    func testFailingAsyncawaitPromise() {
         let exp = expectation(description: "")
         async {
-            _ = try await(failingFetchUserFollowStatusFromName("JohnDoe"))
+            _ = try awaitPromise(failingFetchUserFollowStatusFromName("JohnDoe"))
             XCTFail("testFailingAsyncAwait failed")
         }.onError { _ in
             exp.fulfill()
@@ -36,10 +36,10 @@ class AsyncAwaitTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
     }
     
-    func testCatchFailingAsyncAwait() {        
+    func testCatchFailingAsyncawaitPromise() {
         let exp = expectation(description: "")
         do {
-            _ = try await(failingFetchUserFollowStatusFromName("JohnDoe"))
+            _ = try awaitPromise(failingFetchUserFollowStatusFromName("JohnDoe"))
             XCTFail("testCatchFailingAsyncAwait failed")
         } catch {
             exp.fulfill()
@@ -49,11 +49,11 @@ class AsyncAwaitTests: XCTestCase {
     
     func testAsyncAwaitUnwrapAtYourOwnRisk() {
         let exp = expectation(description: "")
-        let userId = try! await(fetchUserId())
+        let userId = try! awaitPromise(fetchUserId())
         XCTAssertEqual(userId, 1234)
-        let userName = try! await(fetchUserNameFromId(userId))
+        let userName = try! awaitPromise(fetchUserNameFromId(userId))
         XCTAssertEqual(userName, "John Smith")
-        let isFollowed = try! await(fetchUserFollowStatusFromName(userName))
+        let isFollowed = try! awaitPromise(fetchUserFollowStatusFromName(userName))
         XCTAssertFalse(isFollowed)
         exp.fulfill()
         waitForExpectations(timeout: 0.3, handler: nil)
@@ -62,7 +62,7 @@ class AsyncAwaitTests: XCTestCase {
     func testAsyncBlockCanReturnAValue() {
         let exp = expectation(description: "")
         async { () -> Int in
-            let userId = try await(fetchUserId())
+            let userId = try awaitPromise(fetchUserId())
             return userId
         }.then { userId in
             XCTAssertEqual(userId, 1234)
